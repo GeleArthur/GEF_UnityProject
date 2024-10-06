@@ -89,5 +89,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bodyParts: []
-  BodyPart: {fileID: 4350647296335034132, guid: dfc38dea1fb191e44bb265c432acbc6d,
+  BodyPartPrefab: {fileID: 4350647296335034132, guid: dfc38dea1fb191e44bb265c432acbc6d,
+    type: 3}
+  _attachButton: {fileID: -4861385833880372934, guid: a7499ce8627e9ee4cab292ef0e5704da,
     type: 3}

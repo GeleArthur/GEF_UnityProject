@@ -30,8 +30,8 @@ public class PlayerMovement : MonoBehaviour
     {
         var movement = _moveAction.action.ReadValue<Vector2>();
 
-        var forward = _playerCamera.transform.forward.SetY(0).normalized;
-        var right = _playerCamera.transform.right.SetY(0).normalized;
+        var forward = _playerCamera.transform.forward.With(y:0).normalized;
+        var right = _playerCamera.transform.right.With(y:0).normalized;
         
         _playerRigidBody.velocity += (forward * movement.y + right * movement.x) * Time.deltaTime;
     }
