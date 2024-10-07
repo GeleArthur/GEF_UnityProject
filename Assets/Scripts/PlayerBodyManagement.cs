@@ -64,12 +64,12 @@ public class PlayerBodyManagement : MonoBehaviour
 
         Vector3[] around =
         {
-            new Vector3(1, 0, 0),
-            new Vector3(-1, 0, 0),
-            new Vector3(0, 1, 0),
-            new Vector3(0, -1, 0),
-            new Vector3(0, 0, 1),
-            new Vector3(0, 0, -1),
+            new(1, 0, 0),
+            new(-1, 0, 0),
+            new(0, 1, 0),
+            new(0, -1, 0),
+            new(0, 0, 1),
+            new(0, 0, -1),
         };
         
         float smallestAngle = 1;
@@ -143,6 +143,8 @@ public class PlayerBodyManagement : MonoBehaviour
         _sizeExtendHalf = bottonBodyPart - topBodyPart;
 
         _rigidbody.centerOfMass = _centerOfMass;
+        
+        cameraTargetGroup.AddMember(newBodyPart.transform, 1, 1 );
     }
     
     private void OnDrawGizmos()
