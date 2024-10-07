@@ -12,6 +12,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private Camera _playerCamera;
     private Rigidbody _playerRigidBody;
+
+    private Vector2 _inputVector;
     
     private void Start()
     {
@@ -28,16 +30,20 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        var movement = _moveAction.action.ReadValue<Vector2>();
-
-        var forward = _playerCamera.transform.forward.With(y:0).normalized;
-        var right = _playerCamera.transform.right.With(y:0).normalized;
-        
-        _playerRigidBody.velocity += (forward * movement.y + right * movement.x) * Time.deltaTime;
+        _inputVector = _moveAction.action.ReadValue<Vector2>();
     }
 
     private void FixedUpdate()
     {
-        
+        Vector3 forward = _playerCamera.transform.forward.With(y:0).normalized;
+        Vector3 right = _playerCamera.transform.right.With(y:0).normalized;
+
+        Vector3 velocty = _playerRigidBody.velocity;
+        velocty += (forward * _inputVector.y + right * _inputVector.x);
+        velocty *= 0.9f;
+        velocty.y -= 9.81f;
+
+
+        _playerRigidBody.velocity = velocty;
     }
 }

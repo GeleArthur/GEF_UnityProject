@@ -9,20 +9,23 @@ using UnityEngine.Serialization;
 public class PlayerBodyManagement : MonoBehaviour
 {
     [SerializeField]
-    private List<GameObject> _bodyParts = new List<GameObject>();
-    
-    [FormerlySerializedAs("BodyPartPrefab")] [SerializeField]
     private GameObject bodyPartPrefab;
     
     [SerializeField]
-    private InputActionReference _attachButton;
+    private InputActionReference attachButton;
     
     [SerializeField]
-    private CinemachineTargetGroup _cameraTargetGroup;
+    private CinemachineTargetGroup cameraTargetGroup;
+
+    private Rigidbody _rigidbody;
+    private readonly List<GameObject> _bodyParts = new List<GameObject>();
+    private Vector3 _centerOfMass;
+    private Vector3 _sizeExtendHalf;
 
     private void Start()
     {
-        _attachButton.action.Enable();
+        attachButton.action.Enable();
+        _rigidbody = GetComponent<Rigidbody>();
         
         AddBodyPart(Vector3.zero);
         AddBodyPart(new Vector3(0,0,1));
@@ -30,7 +33,7 @@ public class PlayerBodyManagement : MonoBehaviour
 
     private void Update()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, 3, LayerMask.GetMask("Water"));
+        Collider[] hits = Physics.OverlapBox(_centerOfMass, _sizeExtendHalf*2 + Vector3.one, transform.rotation, LayerMask.GetMask("Water"));
 
         if (hits.Length <= 0) return;
         
@@ -68,8 +71,7 @@ public class PlayerBodyManagement : MonoBehaviour
             new Vector3(0, 0, 1),
             new Vector3(0, 0, -1),
         };
-
-
+        
         float smallestAngle = 1;
         Vector3 newPlace = Vector3.zero;
         foreach (Vector3 normal in around)
@@ -88,7 +90,7 @@ public class PlayerBodyManagement : MonoBehaviour
         
         Debug.DrawLine(closestBodyPart.transform.position,  closestBodyPart.transform.position + closestBodyPart.transform.rotation * newPlace, Color.green);
 
-        if (_attachButton.action.WasPressedThisFrame())
+        if (attachButton.action.WasPressedThisFrame())
         {
             AddBodyPart(closestBodyPart.transform.localPosition + newPlace);
         }
@@ -101,5 +103,50 @@ public class PlayerBodyManagement : MonoBehaviour
         newBodyPart.transform.localPosition = position;
         
         _bodyParts.Add(newBodyPart);
+        
+        Vector3 bottonBodyPart = Vector3.zero;
+        Vector3 topBodyPart = Vector3.zero;
+        
+        foreach (GameObject bodyPart in _bodyParts)
+        {
+            if (bottonBodyPart.x < bodyPart.transform.localPosition.x)
+            {
+                bottonBodyPart.x = bodyPart.transform.localPosition.x;
+            }
+            if (bottonBodyPart.y < bodyPart.transform.localPosition.y)
+            {
+                bottonBodyPart.y = bodyPart.transform.localPosition.y;
+            }
+            if (bottonBodyPart.z < bodyPart.transform.localPosition.z)
+            {
+                bottonBodyPart.z = bodyPart.transform.localPosition.z;
+            }
+            
+            if (topBodyPart.x > bodyPart.transform.localPosition.x)
+            {
+                topBodyPart.x = bodyPart.transform.localPosition.x;
+            }
+            if (topBodyPart.y > bodyPart.transform.localPosition.y)
+            {
+                topBodyPart.y = bodyPart.transform.localPosition.y;
+            }
+            if (topBodyPart.z > bodyPart.transform.localPosition.z)
+            {
+                topBodyPart.z = bodyPart.transform.localPosition.z;
+            }
+        }
+
+        topBodyPart += new Vector3(-0.5f, -0.5f, -0.5f);
+        bottonBodyPart += new Vector3(0.5f, 0.5f, 0.5f);
+        
+        _centerOfMass = (topBodyPart + bottonBodyPart)/2;
+        _sizeExtendHalf = bottonBodyPart - topBodyPart;
+
+        _rigidbody.centerOfMass = _centerOfMass;
+    }
+    
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireCube(transform.position + _centerOfMass,(_sizeExtendHalf*2 + Vector3.one)/2);
     }
 }

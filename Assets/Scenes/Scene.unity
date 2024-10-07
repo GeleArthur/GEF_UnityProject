@@ -1454,9 +1454,34 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3934268981611022390, guid: 83bc05ebc18b5ca48aab988e25d33303,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3934268981611022390, guid: 83bc05ebc18b5ca48aab988e25d33303,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3934268981611022390, guid: 83bc05ebc18b5ca48aab988e25d33303,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3934268981611022390, guid: 83bc05ebc18b5ca48aab988e25d33303,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3934268981611022390, guid: 83bc05ebc18b5ca48aab988e25d33303,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4402175798612483433, guid: 83bc05ebc18b5ca48aab988e25d33303,
         type: 3}
-      propertyPath: m_UseGravity
+      propertyPath: m_ImplicitCom
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7959490551212878580, guid: 83bc05ebc18b5ca48aab988e25d33303,
@@ -1464,12 +1489,6 @@ PrefabInstance:
       propertyPath: _playerCamera
       value: 
       objectReference: {fileID: 1139026173}
-    - target: {fileID: 8830807477104592437, guid: 83bc05ebc18b5ca48aab988e25d33303,
-        type: 3}
-      propertyPath: m_Icon
-      value: 
-      objectReference: {fileID: 4422084297763085224, guid: 0000000000000000d000000000000000,
-        type: 0}
     - target: {fileID: 8830807477104592437, guid: 83bc05ebc18b5ca48aab988e25d33303,
         type: 3}
       propertyPath: m_Name
