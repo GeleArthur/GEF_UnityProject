@@ -33,7 +33,7 @@ public class PlayerBodyManagement : MonoBehaviour
 
     private void Update()
     {
-        Collider[] hits = Physics.OverlapBox(_centerOfMass, _sizeExtendHalf*2 + Vector3.one, transform.rotation, LayerMask.GetMask("Water"));
+        Collider[] hits = Physics.OverlapBox(transform.position + _centerOfMass, (_sizeExtendHalf + Vector3.one)/2, transform.rotation, LayerMask.GetMask("Water"));
 
         if (hits.Length <= 0) return;
         
@@ -88,11 +88,13 @@ public class PlayerBodyManagement : MonoBehaviour
             }
         }
         
-        Debug.DrawLine(closestBodyPart.transform.position,  closestBodyPart.transform.position + closestBodyPart.transform.rotation * newPlace, Color.green);
+        Debug.DrawLine(closestBodyPart!.transform.position,  closestBodyPart.transform.position + closestBodyPart.transform.rotation * newPlace, Color.green);
 
         if (attachButton.action.WasPressedThisFrame())
         {
             AddBodyPart(closestBodyPart.transform.localPosition + newPlace);
+            clostedWater.enabled = false;
+            Destroy(clostedWater!.gameObject);
         }
 
     }
@@ -149,6 +151,6 @@ public class PlayerBodyManagement : MonoBehaviour
     
     private void OnDrawGizmos()
     {
-        Gizmos.DrawWireCube(transform.position + _centerOfMass,(_sizeExtendHalf*2 + Vector3.one)/2);
+        // Gizmos.DrawWireCube(transform.position + _centerOfMass,_sizeExtendHalf);
     }
 }
