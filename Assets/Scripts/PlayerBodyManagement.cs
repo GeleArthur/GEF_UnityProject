@@ -21,6 +21,8 @@ public class PlayerBodyManagement : MonoBehaviour
     private readonly List<GameObject> _bodyParts = new List<GameObject>();
     private Vector3 _centerOfMass;
     private Vector3 _sizeExtendHalf;
+    
+    public List<GameObject> BodyParts => _bodyParts;
 
     private void Start()
     {
@@ -147,10 +149,5 @@ public class PlayerBodyManagement : MonoBehaviour
         _rigidbody.centerOfMass = _centerOfMass;
         
         cameraTargetGroup.AddMember(newBodyPart.transform, 1, 1 );
-    }
-    
-    private void OnDrawGizmos()
-    {
-        // Gizmos.DrawWireCube(transform.position + _centerOfMass,_sizeExtendHalf);
     }
 }
