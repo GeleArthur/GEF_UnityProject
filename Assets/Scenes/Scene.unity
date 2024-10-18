@@ -9278,6 +9278,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7959490551212878580, guid: 83bc05ebc18b5ca48aab988e25d33303,
         type: 3}
+      propertyPath: airSpeed
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 7959490551212878580, guid: 83bc05ebc18b5ca48aab988e25d33303,
+        type: 3}
       propertyPath: playerCamera
       value: 
       objectReference: {fileID: 1139026173}
