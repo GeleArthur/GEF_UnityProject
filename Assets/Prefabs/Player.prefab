@@ -124,7 +124,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveAction: {fileID: 3950456261583417886, guid: a7499ce8627e9ee4cab292ef0e5704da,
     type: 3}
-  playerCamera: {fileID: 0}
+  rotateAction: {fileID: -633043680615427510, guid: a7499ce8627e9ee4cab292ef0e5704da,
+    type: 3}
   notPlayerMask:
     serializedVersion: 2
     m_Bits: 8
