@@ -24,7 +24,7 @@ public class PlayerMovement : MonoBehaviour
     
     private bool _isGrounded = false;
 
-    private Quaternion _rotationGoal;
+    private Vector3 _rotationGoal = Vector3.zero;
     
     private void Start()
     {
@@ -69,7 +69,7 @@ public class PlayerMovement : MonoBehaviour
         foreach (GameObject bodyPart in _bodyManagement.BodyParts)
         {
             Debug.DrawRay(bodyPart.transform.position, Vector3.down * 1.0f, Color.red);
-            if (Physics.Raycast(bodyPart.transform.position, Vector3.down, 1.0f))
+            if (Physics.Raycast(bodyPart.transform.position, Vector3.down, 1.0f, ~notPlayerMask, QueryTriggerInteraction.Ignore))
             {
                 _isGrounded = true;
                 return;
@@ -86,38 +86,30 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 movementDirection = (forward * _inputVector.y + right * _inputVector.x) * speed;
         
-        if (movementDirection.sqrMagnitude > 0.001f && _isGrounded && _playerRigidBody.velocity.y < 0.00001f)
-        {
+        if (_isGrounded && movementDirection.sqrMagnitude < 0.0001f ) 
             _playerRigidBody.useGravity = false;
-        }
         else
-        {
             _playerRigidBody.useGravity = true;
-        }
         
-        // movementDirection.y = _playerRigidBody.velocity.y;
         if (_isGrounded)
         {
             _playerRigidBody.velocity = Vector3.Lerp(_playerRigidBody.velocity, movementDirection, friction);
         }
         else
         {
-            if (movementDirection.sqrMagnitude < _playerRigidBody.velocity.sqrMagnitude)
-            {
-                _playerRigidBody.AddForce(movementDirection.normalized * airSpeed); // DUM WAY ALERT
-            }
+            _playerRigidBody.velocity = Vector3.Lerp(_playerRigidBody.velocity, movementDirection.With(y:_playerRigidBody.velocity.y), friction);
+
         }
     }
 
     private void StartRotation(Vector2 input)
     {
-        
-        
+        _rotationGoal = new Vector3(0, input.x, 0);
     }
 
     private void Rotation()
     {
-        // _playerRigidBody.MoveRotation(_rotationGoal);
+        _playerRigidBody.angularVelocity = Vector3.RotateTowards(_playerRigidBody.rotation.eulerAngles, _rotationGoal, 10 * Time.deltaTime, 0.0f);
     }
     
 }
