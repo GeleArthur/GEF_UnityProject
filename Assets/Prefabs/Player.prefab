@@ -128,6 +128,9 @@ MonoBehaviour:
   notPlayerMask:
     serializedVersion: 2
     m_Bits: 8
+  friction: 0.25
+  speed: 0.25
+  airSpeed: 0.25
 --- !u!114 &3662636015332932138
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -142,6 +145,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bodyPartPrefab: {fileID: 4350647296335034132, guid: dfc38dea1fb191e44bb265c432acbc6d,
     type: 3}
+  waterPartPrefab: {fileID: 6190951126277709531, guid: 0c9d21f5bd5d1e24f82cf54ce0b40864,
+    type: 3}
   attachButton: {fileID: -4861385833880372934, guid: a7499ce8627e9ee4cab292ef0e5704da,
+    type: 3}
+  removeButton: {fileID: -7297254344995732938, guid: a7499ce8627e9ee4cab292ef0e5704da,
     type: 3}
   cameraTargetGroup: {fileID: 8985128348488209789}

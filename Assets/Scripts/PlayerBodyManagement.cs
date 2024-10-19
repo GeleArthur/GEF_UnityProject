@@ -2,31 +2,33 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 public class PlayerBodyManagement : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject bodyPartPrefab;
+    [SerializeField] private GameObject bodyPartPrefab;
+    [SerializeField] private GameObject waterPartPrefab;
     
-    [SerializeField]
-    private InputActionReference attachButton;
+    [SerializeField] private InputActionReference attachButton;
+    [SerializeField] private InputActionReference removeButton;
     
     [SerializeField]
     private CinemachineTargetGroup cameraTargetGroup;
 
     private Rigidbody _rigidbody;
-    private readonly List<GameObject> _bodyParts = new List<GameObject>();
+    private readonly Stack<GameObject> _bodyParts = new Stack<GameObject>();
     private Vector3 _centerOfMass;
     private Vector3 _sizeExtendHalf;
     
-    public List<GameObject> BodyParts => _bodyParts;
+    public Stack<GameObject> BodyParts => _bodyParts;
 
     private void Start()
     {
         attachButton.action.Enable();
+        removeButton.action.Enable();
         _rigidbody = GetComponent<Rigidbody>();
         
         AddBodyPart(Vector3.zero);
@@ -35,6 +37,11 @@ public class PlayerBodyManagement : MonoBehaviour
 
     private void Update()
     {
+        if (removeButton.action.WasPressedThisFrame())
+        {
+            RemoveBodyPart();
+        }
+        
         Collider[] hits = Physics.OverlapBox(transform.position + _centerOfMass, (_sizeExtendHalf + Vector3.one)/2, transform.rotation, LayerMask.GetMask("Water"));
 
         if (hits.Length <= 0) return;
@@ -99,6 +106,8 @@ public class PlayerBodyManagement : MonoBehaviour
             Destroy(clostedWater!.gameObject);
         }
 
+
+
     }
 
     private void AddBodyPart(Vector3 position)
@@ -106,8 +115,30 @@ public class PlayerBodyManagement : MonoBehaviour
         GameObject newBodyPart = Instantiate(bodyPartPrefab, transform, false);
         newBodyPart.transform.localPosition = position;
         
-        _bodyParts.Add(newBodyPart);
+        _bodyParts.Push(newBodyPart);
+        CalculateBody();
+
+        cameraTargetGroup.AddMember(newBodyPart.transform, 1, 1 );
+    }
+
+    private void RemoveBodyPart()
+    {
+        if (_bodyParts.Count <= 1) return;
+        GameObject oldBodyPart = _bodyParts.Pop();
+
+        // Vector3 pos = new Vector3(Mathf.Floor(oldBodyPart.transform.position.x), Mathf.Floor(oldBodyPart.transform.position.y), Mathf.Floor(oldBodyPart.transform.position.z)); 
         
+        GameObject waterPart = Instantiate(waterPartPrefab, oldBodyPart.transform.position, quaternion.identity);
+        cameraTargetGroup.RemoveMember(oldBodyPart.transform);
+        
+        Destroy(oldBodyPart);
+        oldBodyPart.SetActive(false);
+        CalculateBody();
+
+    }
+
+    private void CalculateBody()
+    {
         Vector3 bottonBodyPart = Vector3.zero;
         Vector3 topBodyPart = Vector3.zero;
         
@@ -145,9 +176,7 @@ public class PlayerBodyManagement : MonoBehaviour
         
         _centerOfMass = (topBodyPart + bottonBodyPart)/2;
         _sizeExtendHalf = bottonBodyPart - topBodyPart;
-
-        _rigidbody.centerOfMass = _centerOfMass;
         
-        cameraTargetGroup.AddMember(newBodyPart.transform, 1, 1 );
+        _rigidbody.centerOfMass = _centerOfMass;
     }
 }
