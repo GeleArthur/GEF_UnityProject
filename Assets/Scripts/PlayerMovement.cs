@@ -22,8 +22,6 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 _inputVector;
     
     private bool _isGrounded;
-
-    public Vector3 _rotationGoal = Vector3.zero;
     
     private void Start()
     {
@@ -44,12 +42,13 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         _inputVector = moveAction.action.ReadValue<Vector2>();
-
-        if (rotateAction.action.WasPressedThisFrame())
+        
+        if (rotateAction.action.IsPressed())
         {
-            if (_inputVector.x != 0)
+            _inputVector = Vector2.zero;
+            if (moveAction.action.WasPressedThisFrame())
             {
-                StartRotation(_inputVector);
+                StartRotation(moveAction.action.ReadValue<Vector2>());
             }
         }
     }
@@ -77,9 +76,6 @@ public class PlayerMovement : MonoBehaviour
     {
         foreach (GameObject bodyPart in _bodyManagement.BodyParts)
         {
-            
-            
-            
             Debug.DrawRay(bodyPart.transform.position, Vector3.down * 1.0f, Color.red);
             if (Physics.Raycast(bodyPart.transform.position, Vector3.down, 1.0f, ~notPlayerMask, QueryTriggerInteraction.Ignore))
             {
@@ -116,19 +112,28 @@ public class PlayerMovement : MonoBehaviour
 
     private void StartRotation(Vector2 input)
     {
+        var yea = _playerCamera.transform.rotation * new Vector3(input.x, 0, input.y);
+        if (yea.x != 0)
+        {
+            yea.y = 0;
+        }
+        else
+        {
+            yea.x = 0;
+        }
+        yea.Normalize();
         
-        
-        _rotationGoal = new Vector3(MathF.Floor(input.x), 0, 0);
+        Debug.DrawRay(transform.position,yea  , Color.red, 3.0f);
     }
 
     private void Rotation()
     {
-        Debug.DrawRay(transform.position, _rotationGoal * 3.0f, Color.red);
-        _rotationGoal.Normalize();
-        Quaternion deltaRotation = Quaternion.LookRotation(_rotationGoal) * Quaternion.Inverse(_playerRigidBody.rotation);
-        deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
-        
-        _playerRigidBody.angularVelocity = (axis * angle * Mathf.Deg2Rad) / Time.fixedDeltaTime;
+        // Debug.DrawRay(transform.position, _rotationGoal * 3.0f, Color.red);
+        // _rotationGoal.Normalize();
+        // Quaternion deltaRotation = Quaternion.LookRotation(_rotationGoal) * Quaternion.Inverse(_playerRigidBody.rotation);
+        // deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+        //
+        // _playerRigidBody.angularVelocity = (axis * angle * Mathf.Deg2Rad) / Time.fixedDeltaTime;
     }
     
 }
