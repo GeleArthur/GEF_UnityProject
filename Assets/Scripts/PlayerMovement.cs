@@ -46,9 +46,27 @@ public class PlayerMovement : MonoBehaviour
         if (rotateAction.action.IsPressed())
         {
             _inputVector = Vector2.zero;
-            if (moveAction.action.WasPressedThisFrame())
+            if (moveAction.action.WasPressedThisFrame() || (rotateAction.action.WasPressedThisFrame() && moveAction.action.IsPressed()))
             {
-                StartRotation(moveAction.action.ReadValue<Vector2>());
+                var input = moveAction.action.ReadValue<Vector2>();
+
+                var directions = new Vector2[]
+                {
+                    Vector2.up, Vector2.down, Vector2.right, Vector2.left
+                };
+
+                (float, Vector2) direction = (-10, Vector2.up);
+                foreach (Vector2 vector in directions)
+                {
+                    float dotResult = Vector2.Dot(input, vector);
+                    if (dotResult > direction.Item1)
+                    {
+                        direction.Item1 = dotResult;
+                        direction.Item2 = vector;
+                    }
+                }
+                
+                StartRotation(direction.Item2);
             }
         }
     }
@@ -112,18 +130,30 @@ public class PlayerMovement : MonoBehaviour
 
     private void StartRotation(Vector2 input)
     {
-        var yea = _playerCamera.transform.rotation * new Vector3(input.x, 0, input.y);
-        if (yea.x != 0)
+        if (input.x != 0)
         {
-            yea.y = 0;
+            Quaternion magic = Quaternion.FromToRotation(Vector3.forward, input.x > 0 ? Vector3.right : Vector3.left);
+            _playerRigidBody.rotation = magic * _playerRigidBody.rotation;
         }
         else
         {
-            yea.x = 0;
+            Quaternion magic = Quaternion.FromToRotation(Vector3.forward, input.y > 0 ? Vector3.up : Vector3.down);
+            _playerRigidBody.rotation = magic * _playerRigidBody.rotation;
         }
-        yea.Normalize();
         
-        Debug.DrawRay(transform.position,yea  , Color.red, 3.0f);
+        // Matrix4x4 formula = Matrix4x4.Translate(_bodyManagement.CenterOfMass - transform.position) * Matrix4x4.Rotate(magic) *
+        //                     Matrix4x4.Translate(transform.position - _bodyManagement.CenterOfMass);
+
+        // transform.position += _bodyManagement.CenterOfMass;
+        
+        // transform.position -= _bodyManagement.CenterOfMass;
+        
+        // var hi = transform.;
+
+
+        // float rotation = _playerCamera.transform.rotation.eulerAngles.y * Mathf.Deg2Rad + Mathf.Atan2(input.y, input.x);
+
+        // Debug.DrawRay(_bodyManagement.CenterOfMass, yea, Color.red, 3.0f);
     }
 
     private void Rotation()

@@ -24,6 +24,7 @@ public class PlayerBodyManagement : MonoBehaviour
     private Vector3 _sizeExtendHalf;
     
     public Stack<GameObject> BodyParts => _bodyParts;
+    public Vector3 CenterOfMass => _centerOfMass;
 
     private void Start()
     {
@@ -34,7 +35,7 @@ public class PlayerBodyManagement : MonoBehaviour
         AddBodyPart(Vector3.zero);
         AddBodyPart(new Vector3(0,0,1));
     }
-
+    
     private void Update()
     {
         if (removeButton.action.WasPressedThisFrame())
@@ -42,7 +43,7 @@ public class PlayerBodyManagement : MonoBehaviour
             RemoveBodyPart();
         }
         
-        Collider[] hits = Physics.OverlapBox(transform.position + _centerOfMass, (_sizeExtendHalf + Vector3.one)/2, transform.rotation, LayerMask.GetMask("Water"));
+        Collider[] hits = Physics.OverlapBox(transform.position, (_sizeExtendHalf + Vector3.one)/2, transform.rotation, LayerMask.GetMask("Water"));
 
         if (hits.Length <= 0) return;
         
@@ -105,9 +106,6 @@ public class PlayerBodyManagement : MonoBehaviour
             clostedWater.enabled = false;
             Destroy(clostedWater!.gameObject);
         }
-
-
-
     }
 
     private void AddBodyPart(Vector3 position)
@@ -126,8 +124,6 @@ public class PlayerBodyManagement : MonoBehaviour
         if (_bodyParts.Count <= 1) return;
         GameObject oldBodyPart = _bodyParts.Pop();
 
-        // Vector3 pos = new Vector3(Mathf.Floor(oldBodyPart.transform.position.x), Mathf.Floor(oldBodyPart.transform.position.y), Mathf.Floor(oldBodyPart.transform.position.z)); 
-        
         GameObject waterPart = Instantiate(waterPartPrefab, oldBodyPart.transform.position, quaternion.identity);
         cameraTargetGroup.RemoveMember(oldBodyPart.transform);
         
@@ -170,12 +166,19 @@ public class PlayerBodyManagement : MonoBehaviour
                 topBodyPart.z = bodyPart.transform.localPosition.z;
             }
         }
-
+        
         topBodyPart += new Vector3(-0.5f, -0.5f, -0.5f);
         bottonBodyPart += new Vector3(0.5f, 0.5f, 0.5f);
         
         _centerOfMass = (topBodyPart + bottonBodyPart)/2;
         _sizeExtendHalf = bottonBodyPart - topBodyPart;
+
+        transform.position += _centerOfMass;
+
+        foreach (GameObject bodyPart in _bodyParts)
+        {
+            bodyPart.transform.localPosition -= _centerOfMass;
+        }
         
         _rigidbody.centerOfMass = _centerOfMass;
     }
