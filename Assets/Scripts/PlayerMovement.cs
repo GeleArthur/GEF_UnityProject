@@ -163,8 +163,8 @@ public class PlayerMovement : MonoBehaviour
             _endRotation = magic * _playerRigidBody.rotation;
         }
 
-        RotationCollisionCheck();
         _rotationTimer = 0;
+        RotationCollisionCheck();
     }
 
     private void RotationCollisionCheck()
@@ -172,17 +172,14 @@ public class PlayerMovement : MonoBehaviour
         foreach (GameObject part in _bodyManagement.BodyParts)
         {
             var boxAfterRot = _endRotation * part.transform.localPosition;
-            DebugExtension.DebugBounds(new Bounds(transform.position + boxAfterRot, Vector3.one), Color.white, 3);
-            
+            DebugExtension.DebugBounds(new Bounds(transform.position + boxAfterRot, Vector3.one*0.9f), Color.white, 3);
+            var yea = Physics.OverlapBox(transform.position + boxAfterRot, Vector3.one/2*0.9f, Quaternion.identity, ~notPlayerMask);
+            if (yea.Length > 0)
+            {
+                _rotationTimer = 3;
+                return;
+            }
         }
-        
-        
-        // Physics.OverlapBox()
-    }
-
-    private void OnDrawGizmos()
-    {
-        
     }
 
     private void Rotation()
