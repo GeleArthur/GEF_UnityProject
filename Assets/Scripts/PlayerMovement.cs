@@ -10,18 +10,23 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private InputActionReference moveAction;
     [SerializeField] private InputActionReference rotateAction;
     
-
     [SerializeField] private LayerMask notPlayerMask;
-    [Range(0,1)] [SerializeField] private float friction = 0.25f;
+    [SerializeField] [Range(0,1)] private float friction = 0.25f;
     [SerializeField] private float speed = 0.25f;
+    [SerializeField] private float rotationTimeAmount = 1;
+    
     
     private PlayerBodyManagement _bodyManagement;
     private Camera _playerCamera;
-    
     private Rigidbody _playerRigidBody;
-    private Vector2 _inputVector;
     
+    private Vector2 _inputVector;
     private bool _isGrounded;
+
+    private Quaternion _startRotation;
+    private Quaternion _endRotation;
+    private float _rotationTimer = 1;
+    
     
     private void Start()
     {
@@ -46,6 +51,7 @@ public class PlayerMovement : MonoBehaviour
         if (rotateAction.action.IsPressed())
         {
             _inputVector = Vector2.zero;
+            if(_rotationTimer < 1) return;
             if (moveAction.action.WasPressedThisFrame() || (rotateAction.action.WasPressedThisFrame() && moveAction.action.IsPressed()))
             {
                 var input = moveAction.action.ReadValue<Vector2>();
@@ -75,30 +81,31 @@ public class PlayerMovement : MonoBehaviour
     {
         GroundCheck();
         Movement();
-        
         Rotation();
     }
     
-    private Vector3[] _cornerOffset =
-    {
-        new(1, 0, 0),
-        new(-1, 0, 0),
-        new(0, 1, 0),
-        new(0, -1, 0),
-        new(0, 0, 1),
-        new(0, 0, -1),
-    };
-
     private void GroundCheck()
     {
+        Vector3[] corners =
+        {
+            new(-0.5f, 0f, 0.5f),
+            new(-0.5f, 0f, -0.5f),
+            new(0.5f, 0f, -0.5f),
+            new(0.5f, 0f, 0.5f),
+        };
+        
         foreach (GameObject bodyPart in _bodyManagement.BodyParts)
         {
-            Debug.DrawRay(bodyPart.transform.position, Vector3.down * 1.0f, Color.red);
-            if (Physics.Raycast(bodyPart.transform.position, Vector3.down, 1.0f, ~notPlayerMask, QueryTriggerInteraction.Ignore))
+            foreach (Vector3 offset in corners)
             {
-                _isGrounded = true;
-                return;
+                Debug.DrawRay(bodyPart.transform.position + offset, Vector3.down * 0.6f, Color.red);
+                if (Physics.Raycast(bodyPart.transform.position + offset, Vector3.down, 0.6f, ~notPlayerMask, QueryTriggerInteraction.Ignore))
+                {
+                    _isGrounded = true;
+                    return;
+                }
             }
+
         }
         
         _isGrounded = false;
@@ -116,6 +123,7 @@ public class PlayerMovement : MonoBehaviour
         else
             _playerRigidBody.useGravity = true;
         
+        //TODO: Maybe add a start velocity when "ungrounded"
         if (_isGrounded)
         {
             _playerRigidBody.velocity = Vector3.Lerp(_playerRigidBody.velocity, movementDirection, friction);
@@ -132,7 +140,8 @@ public class PlayerMovement : MonoBehaviour
         if (input.x != 0)
         {
             Quaternion magic = Quaternion.FromToRotation(Vector3.forward, input.x > 0 ? Vector3.right : Vector3.left);
-            _playerRigidBody.rotation = magic * _playerRigidBody.rotation;
+            _startRotation = _playerRigidBody.rotation;
+            _endRotation = magic * _playerRigidBody.rotation;
         }
         else
         {
@@ -150,19 +159,45 @@ public class PlayerMovement : MonoBehaviour
             }
             
             Quaternion magic = Quaternion.FromToRotation(direction.Item2, input.y > 0 ? Vector3.up : Vector3.down);
-            _playerRigidBody.rotation = magic * _playerRigidBody.rotation;
+            _startRotation = _playerRigidBody.rotation;
+            _endRotation = magic * _playerRigidBody.rotation;
         }
+
+        RotationCollisionCheck();
+        _rotationTimer = 0;
+    }
+
+    private void RotationCollisionCheck()
+    {
+        foreach (GameObject part in _bodyManagement.BodyParts)
+        {
+            var boxAfterRot = _endRotation * part.transform.localPosition;
+            DebugExtension.DebugBounds(new Bounds(transform.position + boxAfterRot, Vector3.one), Color.white, 3);
+            
+        }
+        
+        
+        // Physics.OverlapBox()
+    }
+
+    private void OnDrawGizmos()
+    {
         
     }
 
     private void Rotation()
     {
-        // Debug.DrawRay(transform.position, _rotationGoal * 3.0f, Color.red);
-        // _rotationGoal.Normalize();
-        // Quaternion deltaRotation = Quaternion.LookRotation(_rotationGoal) * Quaternion.Inverse(_playerRigidBody.rotation);
-        // deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
-        //
-        // _playerRigidBody.angularVelocity = (axis * angle * Mathf.Deg2Rad) / Time.fixedDeltaTime;
+        if (_rotationTimer < 1)
+        {
+            _rotationTimer += Time.fixedDeltaTime / rotationTimeAmount;
+            if (_rotationTimer > 1)
+            {
+                _rotationTimer = 1;
+            }
+            _playerRigidBody.rotation = Quaternion.Lerp(_startRotation, _endRotation, _rotationTimer);
+        }
+        
+        
     }
     
 }
