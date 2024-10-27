@@ -89,7 +89,6 @@ public class PlayerMovement : MonoBehaviour
         new(0, 0, -1),
     };
 
-    // TODO: Dont self intersect
     private void GroundCheck()
     {
         foreach (GameObject bodyPart in _bodyManagement.BodyParts)
@@ -137,23 +136,23 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            Quaternion magic = Quaternion.FromToRotation(Vector3.forward, input.y > 0 ? Vector3.up : Vector3.down);
+            Vector3[] directions = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
+            
+            (float, Vector3) direction = (-10, Vector3.forward);
+            foreach (Vector3 vector in directions)
+            {
+                float dotResult = Vector3.Dot(-_playerCamera.transform.forward, vector);
+                if (dotResult > direction.Item1)
+                {
+                    direction.Item1 = dotResult;
+                    direction.Item2 = vector;
+                }
+            }
+            
+            Quaternion magic = Quaternion.FromToRotation(direction.Item2, input.y > 0 ? Vector3.up : Vector3.down);
             _playerRigidBody.rotation = magic * _playerRigidBody.rotation;
         }
         
-        // Matrix4x4 formula = Matrix4x4.Translate(_bodyManagement.CenterOfMass - transform.position) * Matrix4x4.Rotate(magic) *
-        //                     Matrix4x4.Translate(transform.position - _bodyManagement.CenterOfMass);
-
-        // transform.position += _bodyManagement.CenterOfMass;
-        
-        // transform.position -= _bodyManagement.CenterOfMass;
-        
-        // var hi = transform.;
-
-
-        // float rotation = _playerCamera.transform.rotation.eulerAngles.y * Mathf.Deg2Rad + Mathf.Atan2(input.y, input.x);
-
-        // Debug.DrawRay(_bodyManagement.CenterOfMass, yea, Color.red, 3.0f);
     }
 
     private void Rotation()
