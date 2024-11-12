@@ -139,9 +139,9 @@ public class PlayerMovement : MonoBehaviour
     {
         if (input.x != 0)
         {
-            Quaternion magic = Quaternion.FromToRotation(Vector3.forward, input.x > 0 ? Vector3.right : Vector3.left);
+            Quaternion rotater = Quaternion.FromToRotation(Vector3.forward, input.x > 0 ? Vector3.right : Vector3.left);
             _startRotation = _playerRigidBody.rotation;
-            _endRotation = magic * _playerRigidBody.rotation;
+            _endRotation = rotater * _playerRigidBody.rotation;
         }
         else
         {
@@ -164,23 +164,27 @@ public class PlayerMovement : MonoBehaviour
         }
 
         _rotationTimer = 0;
-        RotationCollisionCheck();
+        float longestSide = Mathf.Max(_bodyManagement.BodySizeHalf.x, _bodyManagement.BodySizeHalf.y, _bodyManagement.BodySizeHalf.z);
+        rotationTimeAmount = longestSide * 0.1f;
+        Debug.Log(longestSide);
+        
+        // RotationCollisionCheck();
     }
 
-    private void RotationCollisionCheck()
-    {
-        foreach (GameObject part in _bodyManagement.BodyParts)
-        {
-            var boxAfterRot = _endRotation * part.transform.localPosition;
-            DebugExtension.DebugBounds(new Bounds(transform.position + boxAfterRot, Vector3.one*0.9f), Color.white, 3);
-            var yea = Physics.OverlapBox(transform.position + boxAfterRot, Vector3.one/2*0.9f, Quaternion.identity, ~notPlayerMask);
-            if (yea.Length > 0)
-            {
-                _rotationTimer = 3;
-                return;
-            }
-        }
-    }
+    // private void RotationCollisionCheck()
+    // {
+    //     foreach (GameObject part in _bodyManagement.BodyParts)
+    //     {
+    //         var boxAfterRot = _endRotation * part.transform.localPosition;
+    //         DebugExtension.DebugBounds(new Bounds(transform.position + boxAfterRot, Vector3.one*0.9f), Color.white, 3);
+    //         var yea = Physics.OverlapBox(transform.position + boxAfterRot, Vector3.one/2*0.9f, Quaternion.identity, ~notPlayerMask);
+    //         if (yea.Length > 0)
+    //         {
+    //             _rotationTimer = 3;
+    //             return;
+    //         }
+    //     }
+    // }
 
     private void Rotation()
     {
@@ -193,8 +197,6 @@ public class PlayerMovement : MonoBehaviour
             }
             _playerRigidBody.rotation = Quaternion.Lerp(_startRotation, _endRotation, _rotationTimer);
         }
-        
-        
     }
     
 }

@@ -24,7 +24,7 @@ public class PlayerBodyManagement : MonoBehaviour
     private Vector3 _sizeExtendHalf;
     
     public Stack<GameObject> BodyParts => _bodyParts;
-    public Vector3 CenterOfMass => _centerOfMass;
+    public Vector3 BodySizeHalf => _sizeExtendHalf;
 
     private void Start()
     {
@@ -140,6 +140,7 @@ public class PlayerBodyManagement : MonoBehaviour
         
         foreach (GameObject bodyPart in _bodyParts)
         {
+            // TODO: Can be better with vector3.max
             if (bottonBodyPart.x < bodyPart.transform.localPosition.x)
             {
                 bottonBodyPart.x = bodyPart.transform.localPosition.x;
@@ -169,6 +170,9 @@ public class PlayerBodyManagement : MonoBehaviour
         
         topBodyPart += new Vector3(-0.5f, -0.5f, -0.5f);
         bottonBodyPart += new Vector3(0.5f, 0.5f, 0.5f);
+        
+        DebugExtension.DebugWireSphere(topBodyPart, 0.5f, 1);
+        DebugExtension.DebugWireSphere(bottonBodyPart, 0.5f, 1);
         
         _centerOfMass = (topBodyPart + bottonBodyPart)/2;
         _sizeExtendHalf = bottonBodyPart - topBodyPart;
