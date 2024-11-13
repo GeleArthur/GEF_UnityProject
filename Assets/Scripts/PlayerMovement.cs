@@ -166,7 +166,6 @@ public class PlayerMovement : MonoBehaviour
         _rotationTimer = 0;
         float longestSide = Mathf.Max(_bodyManagement.BodySizeHalf.x, _bodyManagement.BodySizeHalf.y, _bodyManagement.BodySizeHalf.z);
         rotationTimeAmount = longestSide * 0.1f;
-        Debug.Log(longestSide);
         
         // RotationCollisionCheck();
     }
