@@ -13,7 +13,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private LayerMask notPlayerMask;
     [SerializeField] [Range(0,1)] private float friction = 0.25f;
     [SerializeField] private float speed = 0.25f;
-    [SerializeField] private float rotationTimeAmount = 1;
+    [SerializeField] private float rotationSpeed = 0.1f;
     
     
     private PlayerBodyManagement _bodyManagement;
@@ -22,10 +22,14 @@ public class PlayerMovement : MonoBehaviour
     
     private Vector2 _inputVector;
     private bool _isGrounded;
+    private bool _lastIsGrounded = true;
+    private Vector3 _lastGroundedPosition;
 
     private Quaternion _startRotation;
     private Quaternion _endRotation;
     private float _rotationTimer = 1;
+    private float _rotationTimeAmount = 1;
+
     
     
     private void Start()
@@ -40,6 +44,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnEnable()
     {
+        // Enable input
         moveAction.action.Enable();
         rotateAction.action.Enable();
     }
@@ -50,13 +55,13 @@ public class PlayerMovement : MonoBehaviour
         
         if (rotateAction.action.IsPressed())
         {
-            _inputVector = Vector2.zero;
-            if(_rotationTimer < 1) return;
+            _inputVector = Vector2.zero; // Disable movement if rotation button is pressed
+            if(_rotationTimer < 1) return; // Are we rotating?
             if (moveAction.action.WasPressedThisFrame() || (rotateAction.action.WasPressedThisFrame() && moveAction.action.IsPressed()))
             {
-                var input = moveAction.action.ReadValue<Vector2>();
+                Vector2 input = moveAction.action.ReadValue<Vector2>();
 
-                var directions = new Vector2[]
+                Vector2[] directions = new Vector2[]
                 {
                     Vector2.up, Vector2.down, Vector2.right, Vector2.left
                 };
@@ -64,7 +69,7 @@ public class PlayerMovement : MonoBehaviour
                 (float, Vector2) direction = (-10, Vector2.up);
                 foreach (Vector2 vector in directions)
                 {
-                    float dotResult = Vector2.Dot(input, vector);
+                    float dotResult = Vector2.Dot(input, vector); // Check which straight angle is the closest
                     if (dotResult > direction.Item1)
                     {
                         direction.Item1 = dotResult;
@@ -74,6 +79,12 @@ public class PlayerMovement : MonoBehaviour
                 
                 StartRotation(direction.Item2);
             }
+        }
+
+        // If player falls of map save him.
+        if (transform.position.y < -30)
+        {
+            transform.position = _lastGroundedPosition + new Vector3(0, 3f, 0); // little offset to help players find the ground.
         }
     }
 
@@ -94,6 +105,7 @@ public class PlayerMovement : MonoBehaviour
             new(0.5f, 0f, 0.5f),
         };
         
+        // Check all bottom corners of bodys
         foreach (GameObject bodyPart in _bodyManagement.BodyParts)
         {
             foreach (Vector3 offset in corners)
@@ -102,6 +114,7 @@ public class PlayerMovement : MonoBehaviour
                 if (Physics.Raycast(bodyPart.transform.position + offset, Vector3.down, 0.6f, ~notPlayerMask, QueryTriggerInteraction.Ignore))
                 {
                     _isGrounded = true;
+                    _lastGroundedPosition = transform.position;
                     return;
                 }
             }
@@ -118,35 +131,40 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 movementDirection = (forward * _inputVector.y + right * _inputVector.x) * speed;
         
+        // Dont apply gravity to player if grounded. Prevents sliding off ramps
         if (_isGrounded && movementDirection.sqrMagnitude < 0.0001f ) 
             _playerRigidBody.useGravity = false;
         else
             _playerRigidBody.useGravity = true;
         
-        //TODO: Maybe add a start velocity when "ungrounded"
-        if (_isGrounded)
-        {
-            _playerRigidBody.velocity = Vector3.Lerp(_playerRigidBody.velocity, movementDirection, friction);
-        }
-        else
-        {
-            _playerRigidBody.velocity = Vector3.Lerp(_playerRigidBody.velocity, movementDirection.With(y:_playerRigidBody.velocity.y), friction);
+        // Apply movement
+        _playerRigidBody.velocity = Vector3.Lerp(_playerRigidBody.velocity, movementDirection.With(y:_playerRigidBody.velocity.y), friction);
 
+
+        // Removes the little bump when player goes up a ramp
+        if (_lastIsGrounded != _isGrounded)
+        {
+            _lastIsGrounded = _isGrounded;
+            if (!_isGrounded & _playerRigidBody.velocity.y > 0)
+            {
+                _playerRigidBody.velocity = _playerRigidBody.velocity.With(y: 0);
+            }
         }
     }
 
     private void StartRotation(Vector2 input)
     {
-        if (input.x != 0)
+        if (input.x != 0) // Rotate up or down pressed w or s
         {
             Quaternion rotater = Quaternion.FromToRotation(Vector3.forward, input.x > 0 ? Vector3.right : Vector3.left);
             _startRotation = _playerRigidBody.rotation;
             _endRotation = rotater * _playerRigidBody.rotation;
         }
-        else
+        else // Rotate left or right.
         {
             Vector3[] directions = { Vector3.forward, Vector3.back, Vector3.left, Vector3.right };
             
+            // Calculate which straight angle the camera is rotated to
             (float, Vector3) direction = (-10, Vector3.forward);
             foreach (Vector3 vector in directions)
             {
@@ -163,33 +181,17 @@ public class PlayerMovement : MonoBehaviour
             _endRotation = magic * _playerRigidBody.rotation;
         }
 
+        // setup rotation variables
         _rotationTimer = 0;
         float longestSide = Mathf.Max(_bodyManagement.BodySizeHalf.x, _bodyManagement.BodySizeHalf.y, _bodyManagement.BodySizeHalf.z);
-        rotationTimeAmount = longestSide * 0.1f;
-        
-        // RotationCollisionCheck();
+        _rotationTimeAmount = longestSide * rotationSpeed;
     }
-
-    // private void RotationCollisionCheck()
-    // {
-    //     foreach (GameObject part in _bodyManagement.BodyParts)
-    //     {
-    //         var boxAfterRot = _endRotation * part.transform.localPosition;
-    //         DebugExtension.DebugBounds(new Bounds(transform.position + boxAfterRot, Vector3.one*0.9f), Color.white, 3);
-    //         var yea = Physics.OverlapBox(transform.position + boxAfterRot, Vector3.one/2*0.9f, Quaternion.identity, ~notPlayerMask);
-    //         if (yea.Length > 0)
-    //         {
-    //             _rotationTimer = 3;
-    //             return;
-    //         }
-    //     }
-    // }
 
     private void Rotation()
     {
-        if (_rotationTimer < 1)
+        if (_rotationTimer < 1) // Are we rotating?
         {
-            _rotationTimer += Time.fixedDeltaTime / rotationTimeAmount;
+            _rotationTimer += Time.fixedDeltaTime / _rotationTimeAmount;
             if (_rotationTimer > 1)
             {
                 _rotationTimer = 1;
