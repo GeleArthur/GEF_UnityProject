@@ -25,8 +25,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 348591900844703700}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.6, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -60,6 +60,7 @@ GameObject:
   - component: {fileID: 4402175798612483433}
   - component: {fileID: 7959490551212878580}
   - component: {fileID: 3662636015332932138}
+  - component: {fileID: 1281836716341010085}
   m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
@@ -131,7 +132,7 @@ MonoBehaviour:
     m_Bits: 8
   friction: 0.25
   speed: 10
-  rotationTimeAmount: 0.1
+  rotationSpeed: 0.1
 --- !u!114 &3662636015332932138
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,4 +153,107 @@ MonoBehaviour:
     type: 3}
   removeButton: {fileID: -7297254344995732938, guid: a7499ce8627e9ee4cab292ef0e5704da,
     type: 3}
+  bodyMaterial: {fileID: 2100000, guid: 3a5a043f5a7497d4f91f4ff96fc0b1f2, type: 2}
+  bodyHighlightMaterial: {fileID: 2100000, guid: f4576839078ef4c4f9f8ddb1cf351f93,
+    type: 2}
+  waterMaterial: {fileID: 0}
+  waterHighlightMaterial: {fileID: 0}
+  connectSound: {fileID: 8300000, guid: 620447546a3734341b495b48cc4c08bf, type: 3}
+  disconnectSound: {fileID: 8300000, guid: 860fb97ef13c52641b8559ea632c66a0, type: 3}
   cameraTargetGroup: {fileID: 8985128348488209789}
+--- !u!82 &1281836716341010085
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8830807477104592437}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

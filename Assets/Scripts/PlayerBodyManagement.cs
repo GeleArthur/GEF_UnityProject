@@ -14,16 +14,24 @@ public class PlayerBodyManagement : MonoBehaviour
     
     [SerializeField] private InputActionReference attachButton;
     [SerializeField] private InputActionReference removeButton;
-    
-    [SerializeField]
-    private CinemachineTargetGroup cameraTargetGroup;
 
+    [SerializeField] private Material bodyMaterial;
+    [SerializeField] private Material bodyHighlightMaterial;
+    [SerializeField] private Material waterMaterial;
+    [SerializeField] private Material waterHighlightMaterial;
+    
+    [SerializeField] private AudioClip connectSound;
+    [SerializeField] private AudioClip disconnectSound;
+    
+    [SerializeField] private CinemachineTargetGroup cameraTargetGroup;
+
+    private AudioSource _audioPlayer;
     private Rigidbody _rigidbody;
     private readonly Stack<GameObject> _bodyParts = new Stack<GameObject>();
     private Vector3 _centerOfMass;
     private Vector3 _sizeExtendHalf;
     
-    public Stack<GameObject> BodyParts => _bodyParts;
+    public IEnumerable<GameObject> BodyParts => _bodyParts;
     public Vector3 BodySizeHalf => _sizeExtendHalf;
 
     private void Start()
@@ -31,6 +39,7 @@ public class PlayerBodyManagement : MonoBehaviour
         attachButton.action.Enable();
         removeButton.action.Enable();
         _rigidbody = GetComponent<Rigidbody>();
+        _audioPlayer = GetComponent<AudioSource>();
         
         AddBodyPart(Vector3.zero);
         AddBodyPart(new Vector3(0,0,1));
@@ -86,10 +95,10 @@ public class PlayerBodyManagement : MonoBehaviour
         Vector3 newPlace = Vector3.zero;
         foreach (Vector3 normal in around)
         {
-            Vector3 normalRotated = closestBodyPart.transform.rotation * normal;
+            Vector3 normalRotated = closestBodyPart!.transform.rotation * normal;
 
             Vector3 toVector = (closestBodyPart.transform.position - clostedWater.transform.position).normalized;
-
+            
             float angle = Vector3.Dot(toVector, normalRotated);
             if (angle < smallestAngle)
             {
@@ -114,9 +123,13 @@ public class PlayerBodyManagement : MonoBehaviour
         newBodyPart.transform.localPosition = position;
         
         _bodyParts.Push(newBodyPart);
-        CalculateBody();
-
         cameraTargetGroup.AddMember(newBodyPart.transform, 1, 1 );
+        CalculateBody();
+        ColorLatestBodyPart();
+        
+        _audioPlayer.PlayOneShot(connectSound);
+
+
     }
 
     private void RemoveBodyPart()
@@ -130,6 +143,9 @@ public class PlayerBodyManagement : MonoBehaviour
         Destroy(oldBodyPart);
         oldBodyPart.SetActive(false);
         CalculateBody();
+        ColorLatestBodyPart();
+        
+        _audioPlayer.PlayOneShot(disconnectSound);
 
     }
 
@@ -185,5 +201,15 @@ public class PlayerBodyManagement : MonoBehaviour
         }
         
         _rigidbody.centerOfMass = _centerOfMass;
+    }
+    
+    private void ColorLatestBodyPart()
+    {
+        foreach (GameObject bodyPart in _bodyParts)
+        {
+            bodyPart.GetComponentInChildren<MeshRenderer>().material = bodyMaterial;
+        }
+
+        _bodyParts.Peek().GetComponentInChildren<MeshRenderer>().material = bodyHighlightMaterial;
     }
 }
