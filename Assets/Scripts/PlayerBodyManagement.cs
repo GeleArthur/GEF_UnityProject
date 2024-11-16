@@ -27,6 +27,7 @@ public class PlayerBodyManagement : MonoBehaviour
 
     private AudioSource _audioPlayer;
     private Rigidbody _rigidbody;
+    private GameObject _lastTouchWaterBlock = null;
     private readonly Stack<GameObject> _bodyParts = new Stack<GameObject>();
     private Vector3 _centerOfMass;
     private Vector3 _sizeExtendHalf;
@@ -54,7 +55,16 @@ public class PlayerBodyManagement : MonoBehaviour
         
         Collider[] hits = Physics.OverlapBox(transform.position, (_sizeExtendHalf + Vector3.one)/2, transform.rotation, LayerMask.GetMask("Water"));
 
-        if (hits.Length <= 0) return;
+        if (hits.Length <= 0)
+        {
+            if (_lastTouchWaterBlock != null)
+            {
+                _lastTouchWaterBlock.GetComponent<MeshRenderer>().material = waterMaterial;
+                _lastTouchWaterBlock = null;
+            }
+            
+            return;
+        }
         
         Collider clostedWater = null;
         float closestDistance = float.MaxValue;
@@ -68,12 +78,24 @@ public class PlayerBodyManagement : MonoBehaviour
             }
         }
         
+        if (_lastTouchWaterBlock != clostedWater!.gameObject)
+        {
+            if (_lastTouchWaterBlock != null)
+            {
+                _lastTouchWaterBlock.GetComponent<MeshRenderer>().material = waterMaterial;
+            }
+            
+            _lastTouchWaterBlock = clostedWater.gameObject;
+            _lastTouchWaterBlock.GetComponent<MeshRenderer>().material = waterHighlightMaterial;
+        }
+        
+        
         GameObject closestBodyPart = null;
         closestDistance = float.MaxValue;
         
         foreach (GameObject part in _bodyParts)
         {
-            float distance = (clostedWater!.transform.position - part.transform.position).sqrMagnitude;
+            float distance = (clostedWater.transform.position - part.transform.position).sqrMagnitude;
             if (distance < closestDistance)
             {
                 closestBodyPart = part;
@@ -108,7 +130,7 @@ public class PlayerBodyManagement : MonoBehaviour
         }
         
         Debug.DrawLine(closestBodyPart!.transform.position,  closestBodyPart.transform.position + closestBodyPart.transform.rotation * newPlace, Color.green);
-
+        
         if (attachButton.action.WasPressedThisFrame())
         {
             AddBodyPart(closestBodyPart.transform.localPosition + newPlace);
@@ -128,8 +150,6 @@ public class PlayerBodyManagement : MonoBehaviour
         ColorLatestBodyPart();
         
         _audioPlayer.PlayOneShot(connectSound);
-
-
     }
 
     private void RemoveBodyPart()

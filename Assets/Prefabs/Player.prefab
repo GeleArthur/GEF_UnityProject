@@ -156,8 +156,9 @@ MonoBehaviour:
   bodyMaterial: {fileID: 2100000, guid: 3a5a043f5a7497d4f91f4ff96fc0b1f2, type: 2}
   bodyHighlightMaterial: {fileID: 2100000, guid: f4576839078ef4c4f9f8ddb1cf351f93,
     type: 2}
-  waterMaterial: {fileID: 0}
-  waterHighlightMaterial: {fileID: 0}
+  waterMaterial: {fileID: 2100000, guid: 4764069d4fda21d419d7b1f7fe98ca22, type: 2}
+  waterHighlightMaterial: {fileID: 2100000, guid: 53f8fa2e98139f448b4b5abbe43b9fdd,
+    type: 2}
   connectSound: {fileID: 8300000, guid: 620447546a3734341b495b48cc4c08bf, type: 3}
   disconnectSound: {fileID: 8300000, guid: 860fb97ef13c52641b8559ea632c66a0, type: 3}
   cameraTargetGroup: {fileID: 8985128348488209789}

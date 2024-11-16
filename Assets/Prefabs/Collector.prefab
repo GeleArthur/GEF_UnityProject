@@ -332,6 +332,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   collectedText: {fileID: 522058329264998364}
-  waterNeededToCollect: 8
+  waterNeededToCollect: 6
   rangeSqr: 12
   enableOnComplete: {fileID: 0}
