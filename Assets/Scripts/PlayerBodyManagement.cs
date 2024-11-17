@@ -193,14 +193,12 @@ public class PlayerBodyManagement : MonoBehaviour
         _centerOfMass = (topBodyPart + bottonBodyPart)/2;
         _sizeExtendHalf = topBodyPart - bottonBodyPart;
 
-        // transform.position += _centerOfMass;
+        transform.position += transform.rotation * _centerOfMass;
 
-        // foreach (GameObject bodyPart in _bodyParts)
-        // {
-        //     bodyPart.transform.localPosition -= _centerOfMass;
-        // }
-        
-        // _rigidbody.centerOfMass = _centerOfMass;
+        foreach (GameObject bodyPart in _bodyParts)
+        {
+            bodyPart.transform.localPosition -= _centerOfMass;
+        }
     }
     
     private void ColorLatestBodyPart()
