@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
@@ -52,6 +53,8 @@ public class PlayerBodyManagement : MonoBehaviour
         {
             RemoveBodyPart();
         }
+        
+        DebugExtension.DebugBounds(new Bounds(transform.position, _sizeExtendHalf + Vector3.one));
         
         Collider[] hits = Physics.OverlapBox(transform.position, (_sizeExtendHalf + Vector3.one)/2, transform.rotation, LayerMask.GetMask("Water"));
 
@@ -171,56 +174,33 @@ public class PlayerBodyManagement : MonoBehaviour
 
     private void CalculateBody()
     {
-        Vector3 bottonBodyPart = Vector3.zero;
-        Vector3 topBodyPart = Vector3.zero;
+        // EditorApplication.isPaused = true;
+        Vector3 bottonBodyPart = Vector3.positiveInfinity;
+        Vector3 topBodyPart = Vector3.negativeInfinity;
         
         foreach (GameObject bodyPart in _bodyParts)
         {
-            // TODO: Can be better with vector3.max
-            if (bottonBodyPart.x < bodyPart.transform.localPosition.x)
-            {
-                bottonBodyPart.x = bodyPart.transform.localPosition.x;
-            }
-            if (bottonBodyPart.y < bodyPart.transform.localPosition.y)
-            {
-                bottonBodyPart.y = bodyPart.transform.localPosition.y;
-            }
-            if (bottonBodyPart.z < bodyPart.transform.localPosition.z)
-            {
-                bottonBodyPart.z = bodyPart.transform.localPosition.z;
-            }
-            
-            if (topBodyPart.x > bodyPart.transform.localPosition.x)
-            {
-                topBodyPart.x = bodyPart.transform.localPosition.x;
-            }
-            if (topBodyPart.y > bodyPart.transform.localPosition.y)
-            {
-                topBodyPart.y = bodyPart.transform.localPosition.y;
-            }
-            if (topBodyPart.z > bodyPart.transform.localPosition.z)
-            {
-                topBodyPart.z = bodyPart.transform.localPosition.z;
-            }
+            bottonBodyPart = Vector3.Min(bottonBodyPart, bodyPart.transform.localPosition);
+            topBodyPart = Vector3.Max(topBodyPart, bodyPart.transform.localPosition);
         }
         
-        topBodyPart += new Vector3(-0.5f, -0.5f, -0.5f);
-        bottonBodyPart += new Vector3(0.5f, 0.5f, 0.5f);
-        
-        DebugExtension.DebugWireSphere(topBodyPart, 0.5f, 1);
-        DebugExtension.DebugWireSphere(bottonBodyPart, 0.5f, 1);
+        topBodyPart += new Vector3(0.5f, 0.5f, 0.5f);
+        bottonBodyPart += new Vector3(-0.5f, -0.5f, -0.5f);
+
+        DebugExtension.DebugPoint(transform.position + topBodyPart, Color.red, 0.2f, 5);
+        DebugExtension.DebugPoint(transform.position + bottonBodyPart, Color.red, 0.2f, 5);
         
         _centerOfMass = (topBodyPart + bottonBodyPart)/2;
-        _sizeExtendHalf = bottonBodyPart - topBodyPart;
+        _sizeExtendHalf = topBodyPart - bottonBodyPart;
 
-        transform.position += _centerOfMass;
+        // transform.position += _centerOfMass;
 
-        foreach (GameObject bodyPart in _bodyParts)
-        {
-            bodyPart.transform.localPosition -= _centerOfMass;
-        }
+        // foreach (GameObject bodyPart in _bodyParts)
+        // {
+        //     bodyPart.transform.localPosition -= _centerOfMass;
+        // }
         
-        _rigidbody.centerOfMass = _centerOfMass;
+        // _rigidbody.centerOfMass = _centerOfMass;
     }
     
     private void ColorLatestBodyPart()
