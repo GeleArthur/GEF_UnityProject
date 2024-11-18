@@ -28,6 +28,7 @@ public class PlayerBodyManagement : MonoBehaviour
 
     private AudioSource _audioPlayer;
     private Rigidbody _rigidbody;
+    private LineRenderer _lineRenderer;
     private GameObject _lastTouchWaterBlock = null;
     private readonly Stack<GameObject> _bodyParts = new Stack<GameObject>();
     private Vector3 _centerOfMass;
@@ -42,6 +43,7 @@ public class PlayerBodyManagement : MonoBehaviour
         removeButton.action.Enable();
         _rigidbody = GetComponent<Rigidbody>();
         _audioPlayer = GetComponent<AudioSource>();
+        _lineRenderer = GetComponent<LineRenderer>();
         
         AddBodyPart(Vector3.zero);
         AddBodyPart(new Vector3(0,0,1));
@@ -55,6 +57,7 @@ public class PlayerBodyManagement : MonoBehaviour
         }
         
         DebugExtension.DebugBounds(new Bounds(transform.position, _sizeExtendHalf + Vector3.one));
+        _lineRenderer.positionCount = 0;
         
         Collider[] hits = Physics.OverlapBox(transform.position, (_sizeExtendHalf + Vector3.one)/2, transform.rotation, LayerMask.GetMask("Water"));
 
@@ -131,6 +134,10 @@ public class PlayerBodyManagement : MonoBehaviour
                 newPlace = normal;
             }
         }
+
+        _lineRenderer.positionCount = 2;
+        _lineRenderer.SetPosition(0, closestBodyPart!.transform.position + closestBodyPart.transform.rotation * newPlace/2);
+        _lineRenderer.SetPosition(1, clostedWater.transform.position);
         
         Debug.DrawLine(closestBodyPart!.transform.position,  closestBodyPart.transform.position + closestBodyPart.transform.rotation * newPlace, Color.green);
         
