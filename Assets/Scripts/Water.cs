@@ -7,11 +7,11 @@ public class Water : MonoBehaviour
 {
     private void Awake()
     {
-        WaterManager.Instance.AddWater(this);
+        WaterManagerSingleton.Instance.AddWater(this);
     }
 
     public void OnDestroy()
     {
-        WaterManager.Instance.RemoveWater(this);
+        WaterManagerSingleton.Instance.RemoveWater(this);
     }
 }

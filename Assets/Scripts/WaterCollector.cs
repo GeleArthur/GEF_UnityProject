@@ -14,8 +14,9 @@ public class WaterCollector : MonoBehaviour
 
     private void Update()
     {
+        // How much water is there around.
         int waterAmount = 0;
-        foreach (Water water in WaterManager.Instance.GetWater)
+        foreach (Water water in WaterManagerSingleton.Instance.GetWater)
         {
             if ((water.transform.position - transform.position).sqrMagnitude < rangeSqr)
             {
@@ -23,6 +24,7 @@ public class WaterCollector : MonoBehaviour
             }
         }
 
+        // Update if amount of water is changed
         if (waterAmount != _collectedWater)
         {
             _collectedWater = waterAmount;
@@ -35,6 +37,7 @@ public class WaterCollector : MonoBehaviour
     {
         if (_collectedWater >= waterNeededToCollect)
         {
+            if(enableOnComplete == null) return;
             enableOnComplete.SetActive(true);
         }
     }

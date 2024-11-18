@@ -36,43 +36,60 @@ public class PlayerBodyManagement : MonoBehaviour
     
     public IEnumerable<GameObject> BodyParts => _bodyParts;
     public Vector3 BodySizeHalf => _sizeExtendHalf;
+    
+    private readonly Vector3[] normalsAroundCube =
+    {
+        new(1, 0, 0),
+        new(-1, 0, 0),
+        new(0, 1, 0),
+        new(0, -1, 0),
+        new(0, 0, 1),
+        new(0, 0, -1),
+    };
 
     private void Start()
     {
+        // Setup
         attachButton.action.Enable();
         removeButton.action.Enable();
         _rigidbody = GetComponent<Rigidbody>();
         _audioPlayer = GetComponent<AudioSource>();
         _lineRenderer = GetComponent<LineRenderer>();
         
+        // Add default body parts
         AddBodyPart(Vector3.zero);
         AddBodyPart(new Vector3(0,0,1));
     }
     
     private void Update()
     {
+        // Remove a body part.
         if (removeButton.action.WasPressedThisFrame())
         {
             RemoveBodyPart();
         }
         
         DebugExtension.DebugBounds(new Bounds(transform.position, _sizeExtendHalf + Vector3.one));
-        _lineRenderer.positionCount = 0;
+        _lineRenderer.positionCount = 0; // Disable line renderer.
         
+        // Check around body if we collide with water
         Collider[] hits = Physics.OverlapBox(transform.position, (_sizeExtendHalf + Vector3.one)/2, transform.rotation, LayerMask.GetMask("Water"));
 
+        // Are we hitting a water block?
         if (hits.Length <= 0)
         {
+            // Stop highlighting the water block
             if (_lastTouchWaterBlock != null)
             {
                 _lastTouchWaterBlock.GetComponent<MeshRenderer>().material = waterMaterial;
                 _lastTouchWaterBlock = null;
             }
             
-            return;
+            return; // STOP
         }
         
-        Collider clostedWater = null;
+        // Find the closest water
+        Collider closestWater = null;
         float closestDistance = float.MaxValue;
         foreach (Collider colliderTest in hits)
         {
@@ -80,52 +97,43 @@ public class PlayerBodyManagement : MonoBehaviour
             if (distance < closestDistance)
             {
                 closestDistance = distance;
-                clostedWater = colliderTest;
+                closestWater = colliderTest;
             }
         }
         
-        if (_lastTouchWaterBlock != clostedWater!.gameObject)
+        // Stop/Start highlighting water block 
+        if (_lastTouchWaterBlock != closestWater!.gameObject)
         {
             if (_lastTouchWaterBlock != null)
             {
                 _lastTouchWaterBlock.GetComponent<MeshRenderer>().material = waterMaterial;
             }
             
-            _lastTouchWaterBlock = clostedWater.gameObject;
+            _lastTouchWaterBlock = closestWater.gameObject;
             _lastTouchWaterBlock.GetComponent<MeshRenderer>().material = waterHighlightMaterial;
         }
         
-        
+        // Get closest body part to closest water.
         GameObject closestBodyPart = null;
         closestDistance = float.MaxValue;
-        
         foreach (GameObject part in _bodyParts)
         {
-            float distance = (clostedWater.transform.position - part.transform.position).sqrMagnitude;
+            float distance = (closestWater.transform.position - part.transform.position).sqrMagnitude;
             if (distance < closestDistance)
             {
                 closestBodyPart = part;
                 closestDistance = distance;
             }
         }
-
-        Vector3[] around =
-        {
-            new(1, 0, 0),
-            new(-1, 0, 0),
-            new(0, 1, 0),
-            new(0, -1, 0),
-            new(0, 0, 1),
-            new(0, 0, -1),
-        };
         
+        // Find closest face to water part
         float smallestAngle = 1;
         Vector3 newPlace = Vector3.zero;
-        foreach (Vector3 normal in around)
+        foreach (Vector3 normal in normalsAroundCube)
         {
             Vector3 normalRotated = closestBodyPart!.transform.rotation * normal;
 
-            Vector3 toVector = (closestBodyPart.transform.position - clostedWater.transform.position).normalized;
+            Vector3 toVector = (closestBodyPart.transform.position - closestWater.transform.position).normalized;
             
             float angle = Vector3.Dot(toVector, normalRotated);
             if (angle < smallestAngle)
@@ -135,22 +143,25 @@ public class PlayerBodyManagement : MonoBehaviour
             }
         }
 
+        // Enable line renderer between face and water.
         _lineRenderer.positionCount = 2;
         _lineRenderer.SetPosition(0, closestBodyPart!.transform.position + closestBodyPart.transform.rotation * newPlace/2);
-        _lineRenderer.SetPosition(1, clostedWater.transform.position);
+        _lineRenderer.SetPosition(1, closestWater.transform.position);
         
         Debug.DrawLine(closestBodyPart!.transform.position,  closestBodyPart.transform.position + closestBodyPart.transform.rotation * newPlace, Color.green);
         
+        // If the player presses attach we attach the closest water block.
         if (attachButton.action.WasPressedThisFrame())
         {
             AddBodyPart(closestBodyPart.transform.localPosition + newPlace);
-            clostedWater.enabled = false;
-            Destroy(clostedWater!.gameObject);
+            closestWater.enabled = false;
+            Destroy(closestWater!.gameObject);
         }
     }
 
     private void AddBodyPart(Vector3 position)
     {
+        // Create a body part 
         GameObject newBodyPart = Instantiate(bodyPartPrefab, transform, false);
         newBodyPart.transform.localPosition = position;
         
@@ -164,6 +175,7 @@ public class PlayerBodyManagement : MonoBehaviour
 
     private void RemoveBodyPart()
     {
+        // Remove body part and create water.
         if (_bodyParts.Count <= 1) return;
         GameObject oldBodyPart = _bodyParts.Pop();
 
@@ -179,6 +191,7 @@ public class PlayerBodyManagement : MonoBehaviour
 
     }
 
+    // Calculate a box around the player to find the min and max
     private void CalculateBody()
     {
         // EditorApplication.isPaused = true;
@@ -191,23 +204,28 @@ public class PlayerBodyManagement : MonoBehaviour
             topBodyPart = Vector3.Max(topBodyPart, bodyPart.transform.localPosition);
         }
         
+        // We are not using the center of the cubes
         topBodyPart += new Vector3(0.5f, 0.5f, 0.5f);
         bottonBodyPart += new Vector3(-0.5f, -0.5f, -0.5f);
 
         DebugExtension.DebugPoint(transform.position + topBodyPart, Color.red, 0.2f, 5);
         DebugExtension.DebugPoint(transform.position + bottonBodyPart, Color.red, 0.2f, 5);
         
+        // Calculate box sizes
         _centerOfMass = (topBodyPart + bottonBodyPart)/2;
         _sizeExtendHalf = topBodyPart - bottonBodyPart;
 
-        transform.position += transform.rotation * _centerOfMass;
-
+        // To make sure the center where we rotate around we move the center point around. 
         foreach (GameObject bodyPart in _bodyParts)
         {
             bodyPart.transform.localPosition -= _centerOfMass;
         }
+        
+        // Make sure we cancel out the movement so the body doesn't move
+        transform.position += transform.rotation * _centerOfMass;
     }
     
+    // Color the last body so the player know what is going to disconnect
     private void ColorLatestBodyPart()
     {
         foreach (GameObject bodyPart in _bodyParts)

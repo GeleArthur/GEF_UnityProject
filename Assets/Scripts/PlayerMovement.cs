@@ -15,7 +15,6 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float speed = 0.25f;
     [SerializeField] private float rotationSpeed = 0.1f;
     
-    
     private PlayerBodyManagement _bodyManagement;
     private Camera _playerCamera;
     private Rigidbody _playerRigidBody;
@@ -29,8 +28,16 @@ public class PlayerMovement : MonoBehaviour
     private Quaternion _endRotation;
     private float _rotationTimer = 1;
     private float _rotationTimeAmount = 1;
-
     
+    private readonly Vector3[] _cubeCorners =
+    {
+        new(-0.5f, 0f, 0.5f),
+        new(-0.5f, 0f, -0.5f),
+        new(0.5f, 0f, -0.5f),
+        new(0.5f, 0f, 0.5f),
+    };
+    
+    private readonly Vector2[] directions = { Vector2.up, Vector2.down, Vector2.right, Vector2.left };
     
     private void Start()
     {
@@ -61,23 +68,18 @@ public class PlayerMovement : MonoBehaviour
             {
                 Vector2 input = moveAction.action.ReadValue<Vector2>();
 
-                Vector2[] directions = new Vector2[]
-                {
-                    Vector2.up, Vector2.down, Vector2.right, Vector2.left
-                };
-
-                (float, Vector2) direction = (-10, Vector2.up);
+                (float, Vector2) closestDirection = (-10, Vector2.up);
                 foreach (Vector2 vector in directions)
                 {
                     float dotResult = Vector2.Dot(input, vector); // Check which straight angle is the closest
-                    if (dotResult > direction.Item1)
+                    if (dotResult > closestDirection.Item1)
                     {
-                        direction.Item1 = dotResult;
-                        direction.Item2 = vector;
+                        closestDirection.Item1 = dotResult;
+                        closestDirection.Item2 = vector;
                     }
                 }
                 
-                StartRotation(direction.Item2);
+                StartRotation(closestDirection.Item2);
             }
         }
 
@@ -97,18 +99,10 @@ public class PlayerMovement : MonoBehaviour
     
     private void GroundCheck()
     {
-        Vector3[] corners =
-        {
-            new(-0.5f, 0f, 0.5f),
-            new(-0.5f, 0f, -0.5f),
-            new(0.5f, 0f, -0.5f),
-            new(0.5f, 0f, 0.5f),
-        };
-        
         // Check all bottom corners of bodys
         foreach (GameObject bodyPart in _bodyManagement.BodyParts)
         {
-            foreach (Vector3 offset in corners)
+            foreach (Vector3 offset in _cubeCorners)
             {
                 Debug.DrawRay(bodyPart.transform.position + offset, Vector3.down * 0.6f, Color.red);
                 if (Physics.Raycast(bodyPart.transform.position + offset, Vector3.down, 0.6f, ~notPlayerMask, QueryTriggerInteraction.Ignore))
