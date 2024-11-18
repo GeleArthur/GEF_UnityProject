@@ -4,22 +4,23 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-public class WaterManager
+public class WaterManagerSingleton
 {
-    private static WaterManager _instance;
-    public static WaterManager Instance
+    private static WaterManagerSingleton _instance;
+    public static WaterManagerSingleton Instance
     {
         get
         {
             if (_instance == null)
             {
-                _instance = new WaterManager();
+                _instance = new WaterManagerSingleton();
             }
             return _instance;
         }
     }
     
     private readonly List<Water> _allWater = new List<Water>();
+    // Get collection of all the water
     public IEnumerable<Water> GetWater => _allWater.AsEnumerable();
 
     public void AddWater(Water water)
